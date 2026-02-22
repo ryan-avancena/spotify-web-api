@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Spotify Playlist Info</title>
+  <style>
+    body { font-family: sans-serif; margin: 2rem; }
+    input { width: 400px; padding: 0.5rem; }
+    button { padding: 0.5rem 1rem; margin-left: 0.5rem; }
+    ul { margin-top: 1rem; }
+  </style>
+</head>
+<body>
+  <h1>Spotify Playlist Info</h1>
+  
+  <p>
+    Paste playlist URL: 
+    <input type="text" id="playlistUrl" placeholder="https://open.spotify.com/playlist/...">
+    <button onclick="getPlaylist()">Fetch</button>
+  </p>
+  
+  <ul id="songs"></ul>
+
+  <script>
+    function getPlaylist() {
+      const urlInput = document.getElementById('playlistUrl').value;
+      if (!urlInput) return alert('Paste a playlist URL');
+
+      // Extract playlist ID from URL
+      const match = urlInput.match(/playlist\/([a-zA-Z0-9]+)(\?.*)?/);
+      if (!match) return alert('Invalid playlist URL');
+      const playlistId = match[1];
+
+      // Open Spotify login to get access token
+      window.location.href = `/login?playlist=${playlistId}`;
+    }
+
+    async function displaySongs(accessToken, playlistId) {
+      const res = await fetch(`/playlist/${playlistId}?token=${accessToken}`);
+      const data = await res.json();
+
+      const ul = document.getElementById('songs');
+      ul.innerHTML = '';
+      data.tracks.items.forEach(item => {
+        const song = item.track;
+        const li = document.createElement('li');
+        li.textContent = `${song.name} — ${song.artists.map(a => a.name).join(', ')}`;
+        ul.appendChild(li);
+      });
+    }
+  </script>
+</body>
+</html>
